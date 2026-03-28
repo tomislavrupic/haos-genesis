@@ -208,3 +208,6 @@ __marimo__/
 
 # Project-local plot cache
 output/.mpl/
+output/
+output_smoke/
+output_smoke2/

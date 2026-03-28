@@ -1,3 +1,0 @@
-feature,direction,threshold,train_accuracy,test_accuracy,n_train,n_test,split_seed,test_fraction,transition_low_value,transition_low_break,transition_low_seed,transition_high_value,transition_high_break,transition_high_seed,transition_midpoint
-delta_persistence_1_to_2,<=,-0.1155894886363636,1.0,0.875,22,8,17,0.25,-0.11766937335958003,2,35,-0.1175659150560725,3,41,-0.11761764420782626
-L2_persistence_score,<=,0.12372354822834647,0.9545454545454546,0.875,22,8,17,0.25,0.1335217952159389,2,23,0.13358890330470052,3,24,0.1335553492603197
