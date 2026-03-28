@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HAOS Genesis Technical Paper</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 22mm 18mm 22mm 18mm;
+    }
+    body {
+      font-family: "Georgia", "Times New Roman", serif;
+      color: #111827;
+      line-height: 1.5;
+      margin: 0 auto;
+      max-width: 920px;
+      font-size: 11.5pt;
+      background: #ffffff;
+    }
+    h1, h2, h3, h4 {
+      color: #0f172a;
+      page-break-after: avoid;
+    }
+    h1 {
+      font-size: 24pt;
+      margin: 0 0 0.2em 0;
+    }
+    h2 {
+      font-size: 17pt;
+      margin-top: 1.8em;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 0.2em;
+    }
+    h3 {
+      font-size: 13pt;
+      margin-top: 1.2em;
+    }
+    p {
+      margin: 0.7em 0;
+      text-align: justify;
+    }
+    .title-block {
+      margin-bottom: 1.8em;
+    }
+    .subtitle {
+      color: #475569;
+      font-size: 12pt;
+      margin-top: 0.2em;
+    }
+    .abstract {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      padding: 1em 1.2em;
+      margin: 1.5em 0;
+    }
+    .abstract h2 {
+      border: 0;
+      margin-top: 0;
+      font-size: 14pt;
+      padding-bottom: 0;
+    }
+    .equation, .codeblock {
+      font-family: "Menlo", "Consolas", monospace;
+      white-space: pre-wrap;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 0.9em 1em;
+      margin: 0.8em 0;
+      font-size: 10pt;
+    }
+    .figure {
+      margin: 1.4em 0;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+    .figure img {
+      max-width: 100%;
+      border: 1px solid #cbd5e1;
+    }
+    .caption {
+      color: #475569;
+      font-size: 9.5pt;
+      margin-top: 0.4em;
+    }
+    .small {
+      font-size: 10pt;
+    }
+    ol, ul {
+      margin: 0.5em 0 0.7em 1.4em;
+    }
+    li {
+      margin: 0.25em 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+      font-size: 10pt;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 0.45em 0.55em;
+      vertical-align: top;
+    }
+    th {
+      background: #e2e8f0;
+      text-align: left;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+  <div class="title-block">
+    <h1>HAOS Genesis: A Path-Dependent Persistence Probe with a Predictable Collapse Boundary</h1>
+    <div class="subtitle">HAOS Genesis v0.1 technical paper</div>
+    <div class="subtitle">Self-contained subsystem extracted for standalone use</div>
+  </div>
+
+  <div class="abstract">
+    <h2>Abstract</h2>
+    <p>
+      HAOS Genesis is a self-contained graph-based persistence engine designed to test whether
+      structure survives constrained transformation. The system constructs an initial interaction
+      graph, evolves that graph along a frozen hierarchy, and measures persistence, recovery,
+      and overlap at each step. The present implementation is intentionally narrow: it is not a
+      physical theory, but an operational probe for collapse and survival under cumulative change.
+    </p>
+    <p>
+      The main result is a validated base-regime mechanism. In the regime defined by size <code>128</code>,
+      schedule shift <code>0.0</code>, and perturbation <code>off</code>, collapse concentrates in a narrow band at
+      levels <code>2-3</code>. Break family is predictable before collapse from the derivative signal
+      <code>delta_persistence(1-&gt;2)</code>, with held-out accuracy <code>0.875</code> and a transition band localized
+      near <code>-0.1176</code>. Boundary inspection shows the deciding event is not graph fragmentation:
+      support remains connected while break-2 seeds suffer a stronger consolidation loss than
+      break-3 seeds. Variant testing shows that this mechanism should remain regime-local.
+      Schedule shift acts as a control parameter that compresses and then erases the original
+      <code>2 vs 3</code> split.
+    </p>
+  </div>
+
+  <h2>1. Introduction</h2>
+  <p>
+    The original risk in this class of system is to confuse a parameter sweep with an evolution.
+    If each hierarchy level is rebuilt independently, there is no accumulation, no memory, and
+    no honest persistence test. HAOS Genesis addresses that problem by imposing a path-dependent
+    refinement rule.
+  </p>
+  <p>
+    The goal is minimal and operational: define a deterministic graph universe, apply constrained
+    transformation through a frozen hierarchy, measure whether structure survives, and detect and
+    predict collapse when it does not. The system is not asked to explain physics or emergence.
+    It is asked to expose whether a reproducible collapse boundary exists, whether that boundary is
+    predictable before it is crossed, and whether the mechanism can be described honestly within the
+    observed regime.
+  </p>
+
+  <h2>2. System Definition</h2>
+  <h3>2.1 Universe</h3>
+  <p>A universe is defined as <code>(G0, hierarchy trace, metrics trajectory)</code>.</p>
+  <p>
+    <code>G0</code> is the initial interaction graph, the hierarchy trace is the sequence of refined states,
+    and the metrics trajectory records persistence-related measurements at each level.
+  </p>
+
+  <h3>2.2 Graph Construction</h3>
+  <p>
+    Nodes are placed deterministically in two-dimensional unit space using a seeded random generator.
+    Pairwise Euclidean distances are converted into a Gaussian affinity matrix:
+  </p>
+  <div class="equation">A_ij = exp(-d_ij^2 / (2 sigma^2))</div>
+  <p>
+    Edges beyond the locality radius are removed, and diagonal entries are set to zero.
+  </p>
+
+  <h3>2.3 Frozen Hierarchy</h3>
+  <p>For size <code>N</code>, the base scale is:</p>
+  <div class="equation">h = 1 / round(sqrt(N))</div>
+  <p>At hierarchy level <code>l</code>, the kernel width is:</p>
+  <div class="equation">sigma_l = (l + 1 + s) h</div>
+  <p>
+    where <code>s</code> is the schedule shift control parameter. The locality radius is:
+  </p>
+  <div class="equation">r_l = min(3 sigma_l, sqrt(2))</div>
+
+  <h2>3. Path-Dependent Update Rule</h2>
+  <p>
+    The central correction in HAOS Genesis is the replacement of independent rebuilding with
+    refinement from the previous state.
+  </p>
+  <p>Given the previous graph <code>A_prev</code>:</p>
+  <ol>
+    <li>rebuild only the target support with the new kernel width while preserving node geometry</li>
+    <li>compute a transport operator <code>T</code> from the previous graph</li>
+    <li>evolve the prior affinity as <code>A_evolved = T A_prev T^T</code></li>
+    <li>constrain the evolved affinity by the new support as <code>A_new = min(A_evolved, A_target)</code></li>
+  </ol>
+  <p>This update preserves geometry, carries forward memory, and introduces irreversibility.</p>
+
+  <h2>4. Perturbation</h2>
+  <p>
+    Perturbation is deterministic for a fixed seed and level. The current perturbation engine applies
+    weight jitter, low-probability rewiring, and rare node removal below one percent. Perturbation is
+    applied after each hierarchy level when enabled, and the original graph is never mutated.
+  </p>
+  <p>
+    This design is useful but not interpretation-neutral: the node-removal component can create
+    small explicit fragmentation and therefore must be treated separately from non-fragmenting stress.
+  </p>
+
+  <h2>5. Metrics</h2>
+  <p>Per-level metrics include:</p>
+  <ol>
+    <li><code>largest_component_fraction</code></li>
+    <li><code>clustering_coefficient</code></li>
+    <li><code>connectivity_diameter</code></li>
+    <li><code>transport_efficiency</code></li>
+    <li><code>persistence_score</code></li>
+    <li><code>recovery_score</code></li>
+    <li><code>overlap</code></li>
+    <li><code>perturbation_sensitivity</code></li>
+  </ol>
+  <p>The generator adds two trajectory metrics:</p>
+  <ol>
+    <li><code>local_overlap</code></li>
+    <li><code>delta_persistence</code></li>
+  </ol>
+  <p>
+    These are essential. The later analysis shows that the derivative signal <code>delta_persistence</code>
+    is more informative than the absolute persistence level for predicting collapse family.
+  </p>
+
+  <h2>6. Experimental Program</h2>
+  <p>The present package includes the full analysis workflow used to derive the current results:</p>
+  <ol>
+    <li>collapse mapping across seeds and perturbation strengths</li>
+    <li>break-family comparison for <code>break=2</code> versus <code>break=3</code></li>
+    <li>minimal threshold prediction from pre-boundary features</li>
+    <li>boundary microscopy on seeds nearest the threshold</li>
+    <li>mechanism validation across size, shift, and perturbation variants</li>
+    <li>schedule-shift sweep as a control program</li>
+  </ol>
+
+  <h2>7. Results</h2>
+  <h3>7.1 Collapse Band</h3>
+  <p>
+    Across seeds <code>20-50</code> and strengths <code>off</code>, <code>0.01</code>, <code>0.03</code>, <code>0.05</code>, and <code>0.08</code>,
+    break levels were distributed as level <code>2: 42</code>, level <code>3: 111</code>, and level <code>4: 2</code>.
+    The dominant collapse band is therefore levels <code>2-3</code>.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Strength</th>
+        <th>Break-level counts</th>
+        <th>Mean final overlap</th>
+        <th>Mean recovery</th>
+        <th>Mean failures</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>off</td><td>{2: 7, 3: 23, 4: 1}</td><td>0.946199</td><td>0.555460</td><td>3.097</td></tr>
+      <tr><td>0.01</td><td>{2: 8, 3: 23}</td><td>0.944673</td><td>0.551711</td><td>3.161</td></tr>
+      <tr><td>0.03</td><td>{2: 8, 3: 22, 4: 1}</td><td>0.943242</td><td>0.548419</td><td>3.065</td></tr>
+      <tr><td>0.05</td><td>{2: 10, 3: 21}</td><td>0.941794</td><td>0.546635</td><td>3.161</td></tr>
+      <tr><td>0.08</td><td>{2: 9, 3: 22}</td><td>0.941286</td><td>0.538162</td><td>3.258</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Mean final overlap and recovery drift downward with stronger perturbation, but the break band
+    does not smear outward. Perturbation changes severity more than location.
+  </p>
+  <div class="figure">
+    <img src="../output/collapse_map_break_level.png" alt="Collapse map">
+    <div class="caption">Figure 1. Break level by seed and perturbation strength.</div>
+  </div>
+
+  <h3>7.2 Pre-Collapse Prediction</h3>
+  <p>In the base regime, <code>delta_persistence(1-&gt;2)</code> is the strongest predictor of collapse family.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Threshold</th>
+        <th>Train accuracy</th>
+        <th>Held-out accuracy</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>delta_persistence_1_to_2</code></td><td><code>&lt;= -0.1155894886363636</code></td><td>1.000</td><td>0.875</td></tr>
+      <tr><td><code>L2_persistence_score</code></td><td><code>&lt;= 0.12372354822834647</code></td><td>0.955</td><td>0.875</td></tr>
+    </tbody>
+  </table>
+  <p>
+    The transition band is microscopically narrow: break-2 seed <code>35</code> lies at
+    <code>-0.11766937335958003</code>, break-3 seed <code>41</code> at
+    <code>-0.1175659150560725</code>, with midpoint <code>-0.11761764420782626</code>.
+  </p>
+  <div class="figure">
+    <img src="../output/predictor_off_delta_persistence_1_to_2.png" alt="Predictor threshold">
+    <div class="caption">Figure 2. Threshold predictor using delta persistence between levels 1 and 2.</div>
+  </div>
+
+  <h3>7.3 Family Separation</h3>
+  <p>Base-regime effect sizes show that the split is decided before the boundary:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Effect size</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>delta_persistence_1_to_2</code></td><td>-2.3289</td></tr>
+      <tr><td><code>L2_persistence_score</code></td><td>-2.0599</td></tr>
+      <tr><td><code>L2_local_overlap</code></td><td>1.0273</td></tr>
+      <tr><td><code>L0_clustering_coefficient</code></td><td>-0.9327</td></tr>
+      <tr><td><code>delta_local_overlap_1_to_2</code></td><td>0.9034</td></tr>
+    </tbody>
+  </table>
+  <p>
+    This means collapse is not best predicted from the state at level <code>2</code>, but from the failure
+    to consolidate structure during the transition into level <code>2</code>.
+  </p>
+  <div class="figure">
+    <img src="../output/seed_family_off_top_features.png" alt="Family separation">
+    <div class="caption">Figure 3. Top pre-break features separating break-2 and break-3 families.</div>
+  </div>
+
+  <h3>7.4 Boundary Microscope</h3>
+  <p>
+    The six seeds nearest the threshold were break-2 seeds <code>35</code>, <code>23</code>, <code>47</code> and break-3 seeds
+    <code>41</code>, <code>43</code>, <code>21</code>. Across these seeds, support remains connected through levels <code>1-3</code>:
+    <code>largest_component_fraction = 1.0</code> and <code>component_count = 1</code>.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Family</th>
+        <th>Level</th>
+        <th>Persistence</th>
+        <th>Recovery</th>
+        <th>Clustering</th>
+        <th>Largest component</th>
+        <th>Local overlap</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>break-2</td><td>1</td><td>0.250181</td><td>0.759912</td><td>0.779692</td><td>1.0</td><td>0.988149</td></tr>
+      <tr><td>break-2</td><td>2</td><td>0.129318</td><td>0.566563</td><td>0.901474</td><td>1.0</td><td>0.995264</td></tr>
+      <tr><td>break-2</td><td>3</td><td>0.022538</td><td>0.462079</td><td>0.990282</td><td>1.0</td><td>0.995821</td></tr>
+      <tr><td>break-3</td><td>1</td><td>0.244314</td><td>0.790222</td><td>0.783633</td><td>1.0</td><td>0.989319</td></tr>
+      <tr><td>break-3</td><td>2</td><td>0.131726</td><td>0.652817</td><td>0.910538</td><td>1.0</td><td>0.994045</td></tr>
+      <tr><td>break-3</td><td>3</td><td>0.010280</td><td>0.400757</td><td>0.994729</td><td>1.0</td><td>0.996386</td></tr>
+    </tbody>
+  </table>
+  <p>
+    The collapse boundary is therefore not a fragmentation boundary. It is a coherence or
+    consolidation boundary inside connected support.
+  </p>
+  <div class="figure">
+    <img src="../output/boundary_microscope_levels_1_to_3.png" alt="Boundary microscope">
+    <div class="caption">Figure 4. Near-threshold seeds across levels 1 to 3.</div>
+  </div>
+
+  <h3>7.5 Mechanism Validation</h3>
+  <p>Mechanism validation was intentionally used to prevent over-generalization.</p>
+  <ul>
+    <li><strong>Base regime.</strong> <code>size_128</code>, <code>shift_0.0</code>, <code>perturbation_off</code>. Connected support holds and stronger <code>1-&gt;2</code> consolidation loss separates break-2 from break-3.</li>
+    <li><strong>Size 256.</strong> Support remains connected, but the family balance collapses to <code>30 vs 1</code>, so the two-family mechanism is not stable enough there.</li>
+    <li><strong>Perturbation 0.03.</strong> Derivative separation remains visible, but explicit node removal introduces small fragmentation.</li>
+    <li><strong>Shifted schedules.</strong> The original family split is erased rather than preserved.</li>
+  </ul>
+  <div class="figure">
+    <img src="../output/mechanism_validation_gaps.png" alt="Mechanism validation">
+    <div class="caption">Figure 5. Separation gaps under mechanism validation variants.</div>
+  </div>
+
+  <h3>7.6 Schedule Shift as Control</h3>
+  <p>Schedule shift behaves as a true control parameter.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Shift</th>
+        <th>Break-2</th>
+        <th>Break-3</th>
+        <th>Dominant break level</th>
+        <th>Split exists</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>0.0</td><td>7</td><td>23</td><td>3</td><td>yes</td></tr>
+      <tr><td>0.1</td><td>16</td><td>15</td><td>2</td><td>yes</td></tr>
+      <tr><td>0.2</td><td>26</td><td>5</td><td>2</td><td>yes</td></tr>
+      <tr><td>0.3</td><td>28</td><td>3</td><td>2</td><td>yes</td></tr>
+      <tr><td>0.4</td><td>31</td><td>0</td><td>2</td><td>no</td></tr>
+      <tr><td>0.7</td><td>10</td><td>0</td><td>1</td><td>no</td></tr>
+      <tr><td>1.2</td><td>0</td><td>0</td><td>1</td><td>no</td></tr>
+    </tbody>
+  </table>
+  <p>
+    The original <code>2 vs 3</code> split exists only for shifts <code>0.0-0.3</code>. After that, the comparison regime itself disappears.
+  </p>
+  <div class="figure">
+    <img src="../output/shift_sweep_control_map.png" alt="Shift sweep">
+    <div class="caption">Figure 6. Schedule shift as a control parameter.</div>
+  </div>
+
+  <h2>8. Discussion</h2>
+  <p>
+    The main significance of HAOS Genesis is not that it collapses. Many systems collapse.
+    The important result is that collapse becomes predictable before it happens, and that the
+    predictor is a derivative signal localized to a specific transition step.
+  </p>
+  <p>
+    The strongest current interpretation is: collapse is preceded by insufficient consolidation
+    during the <code>1-&gt;2</code> transition. This is stronger than saying that low persistence is bad.
+    It says the decisive signal is not simply the state but the failed transition.
+  </p>
+  <p>
+    Just as importantly, the package now separates regime-local truth from broader speculation.
+    The base mechanism holds where it was validated. Outside that regime, the system reveals
+    different control structure instead of being forced back into the same explanation.
+  </p>
+
+  <h2>9. Limitations</h2>
+  <ol>
+    <li>perturbation mixes non-fragmenting and fragmenting effects</li>
+    <li>the larger-size regime is not yet mapped as carefully as the base regime</li>
+    <li>schedule shift changes regime identity, so threshold comparisons do not extend automatically</li>
+    <li>all metrics are operational graph observables, not deeper field variables</li>
+  </ol>
+  <p>These are boundaries of the current claim, not defects to hide.</p>
+
+  <h2>10. Conclusion</h2>
+  <p>HAOS Genesis now supports a complete minimal loop:</p>
+  <ol>
+    <li>path-dependent evolution</li>
+    <li>collapse detection</li>
+    <li>pre-collapse prediction</li>
+    <li>mechanism validation</li>
+    <li>control mapping</li>
+  </ol>
+  <p>The validated base-regime claim is therefore:</p>
+  <p class="small">
+    In the regime defined by size <code>128</code>, schedule shift <code>0.0</code>, and perturbation <code>off</code>, a seed
+    breaks at level <code>2</code> rather than <code>3</code> when the <code>1-&gt;2</code> transition produces a stronger consolidation
+    loss, while connected support remains intact.
+  </p>
+  <p>That claim is narrow, reproducible, and operationally grounded.</p>
+
+  <h2>Appendix A. Reproducibility Commands</h2>
+  <div class="codeblock">python3 collapse_map.py --seed-start 20 --seed-stop 50
+python3 compare_seed_families.py
+python3 predict_collapse.py
+python3 boundary_microscope.py
+python3 validate_mechanism.py
+python3 shift_sweep.py --seed-start 20 --seed-stop 50</div>
+</body>
+</html>

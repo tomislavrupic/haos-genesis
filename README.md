@@ -2,6 +2,8 @@
 
 ![Architecture of Graph Collapse Analysis](docs/Architecture%20of%20Graph%20Collapse%20Analysis.png)
 
+[Open the visual overview PDF](docs/HAOS_Genesis.pdf)
+
 HAOS Genesis is a minimal universe generator for studying persistence and collapse under constrained evolution. Each run creates a seeded interaction graph-world, evolves it through a frozen hierarchy, and measures persistence and recovery at each step. In the validated base regime, the system exposes a narrow pre-collapse boundary.
 
 ## v0.1 Highlights
@@ -43,7 +45,9 @@ streamlit run app.py
 
 ## Docs
 
+- [Visual overview PDF](docs/HAOS_Genesis.pdf)
 - [Full documentation](docs/HAOS_GENESIS_FULL_DOCUMENTATION.md)
 - [Technical paper](docs/HAOS_GENESIS_TECHNICAL_PAPER.md)
+- [Technical paper PDF](docs/HAOS_GENESIS_TECHNICAL_PAPER.pdf)
 - [v0.1.0 release body](docs/V0_1_RELEASE_BODY.md)
 - [Landing page copy](docs/V0_1_LANDING_PAGE_COPY.md)
