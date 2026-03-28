@@ -2,7 +2,7 @@
 
 ![Architecture of Graph Collapse Analysis](docs/Architecture%20of%20Graph%20Collapse%20Analysis.png)
 
-HAOS Genesis is a path-dependent persistence engine for testing whether graph structure survives constrained transformation. It evolves seeded interaction graphs through a frozen hierarchy, measures persistence and recovery at each step, and exposes a narrow pre-collapse boundary in the validated base regime.
+HAOS Genesis is a minimal universe generator for studying persistence and collapse under constrained evolution. Each run creates a seeded interaction graph-world, evolves it through a frozen hierarchy, and measures persistence and recovery at each step. In the validated base regime, the system exposes a narrow pre-collapse boundary.
 
 ## v0.1 Highlights
 
