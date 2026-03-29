@@ -34,6 +34,21 @@ Outputs are written locally to `output/` and are ignored by git.
 streamlit run app.py
 ```
 
+## API Example
+
+```python
+from haos_genesis.api import haos_stability_skill
+
+result = haos_stability_skill({
+    "seed": 42,
+    "size": 128,
+    "perturbation": True,
+    "perturbation_strength": 0.05,
+})
+
+print(result)
+```
+
 ## Repository Contents
 
 - `generator.py`: path-dependent graph evolution engine

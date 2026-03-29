@@ -19,6 +19,13 @@ def _normalize_positions(positions: np.ndarray) -> np.ndarray:
     return (array - mins) / spans
 
 
+def _normalize_affinity(affinity: np.ndarray) -> np.ndarray:
+    array = np.asarray(affinity, dtype=float)
+    array = array / max(float(array.max()), 1.0e-12)
+    row_sum = array.sum(axis=1, keepdims=True)
+    return array / (row_sum + 1.0e-12)
+
+
 def _build_graph_from_edges(nodes, edges, seed: int = 42, positions=None):
     if not nodes:
         raise ValueError("nodes must not be empty")
@@ -39,6 +46,11 @@ def _build_graph_from_edges(nodes, edges, seed: int = 42, positions=None):
         affinity[i, j] = float(weight)
         affinity[j, i] = float(weight)
     np.fill_diagonal(affinity, 0.0)
+    if affinity.shape[0] < 4:
+        raise ValueError("Graph too small for stability analysis")
+    if not np.any(affinity > 0.0):
+        raise ValueError("Graph has no connectivity")
+    affinity = _normalize_affinity(affinity)
     delta = coords[:, None, :] - coords[None, :, :]
     distances = np.linalg.norm(delta, axis=-1)
     return {
@@ -50,12 +62,9 @@ def _build_graph_from_edges(nodes, edges, seed: int = 42, positions=None):
 
 def _build_trace_from_graph(graph_data: dict[str, np.ndarray], seed: int = 42, refinement_levels: int = 5, schedule_shift: float = 0.0):
     levels = frozen_hierarchy(len(graph_data["positions"]), refinement_levels, schedule_shift=schedule_shift)
-    affinity = np.asarray(graph_data["affinity"], dtype=float)
-    affinity = 0.5 * (affinity + affinity.T)
-    affinity = affinity / max(float(np.max(affinity)), 1.0)
     graph = InteractionGraph(
         positions=np.asarray(graph_data["positions"], dtype=float),
-        affinity=affinity,
+        affinity=np.asarray(graph_data["affinity"], dtype=float),
         distances=np.asarray(graph_data["distances"], dtype=float),
         kernel_width=float(levels[0]["kernel_width"]),
         locality_radius=float(levels[0]["locality_radius"]),
@@ -103,9 +112,20 @@ def haos_stability_skill(input_payload: dict[str, Any]):
             schedule_shift=float(input_payload.get("schedule_shift", 0.0)),
         )
     result = predict_collapse(trace, threshold=threshold)
+    if result["predicted_break"] is None or result["safety_margin"] is None:
+        raise ValueError("Trace too short for stability prediction")
     return {
         "k_star": int(result["k_star"]),
-        "predicted_break": result["predicted_break"],
-        "safety_margin": result["safety_margin"],
+        "predicted_break": int(result["predicted_break"]),
+        "safety_margin": float(result["safety_margin"]),
         "min_delta": float(result["min_delta"]),
+        "confidence": abs(float(result["min_delta"])),
     }
+
+
+def analyze_many(payloads: list[dict[str, Any]]):
+    return [haos_stability_skill(payload) for payload in payloads]
+
+
+def monitor_sequence(payloads: list[dict[str, Any]]):
+    return [haos_stability_skill(payload) for payload in payloads]
