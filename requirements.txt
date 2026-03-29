@@ -1,4 +1,5 @@
 numpy
 matplotlib
+networkx
 moviepy
 streamlit

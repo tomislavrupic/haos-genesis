@@ -6,6 +6,6 @@ Implements constrained evolution and measurable survival
 
 from .birth_certificate import BirthCertificate
 from .generator import generate_universe
-from .api import StabilityMonitor, compute_k_star
+from .api import StabilityMonitor, compute_k_star, predict_collapse
 
-__all__ = ["BirthCertificate", "StabilityMonitor", "compute_k_star", "generate_universe"]
+__all__ = ["BirthCertificate", "StabilityMonitor", "compute_k_star", "generate_universe", "predict_collapse"]

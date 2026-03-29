@@ -207,6 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 # Project-local plot cache
+.DS_Store
 output/.mpl/
 output/
 output_smoke/
