@@ -12,6 +12,7 @@ The package is intentionally narrow:
 - it measures persistence and recovery at each level
 - it supports controlled perturbation
 - it includes the analysis scripts used to identify collapse bands, predictors, and control behavior
+- it exposes a deterministic stability monitor and agent-callable skill for practical use
 
 The package does not model physics, spacetime, or consciousness.
 It is an operational persistence probe.
@@ -61,11 +62,14 @@ This makes the trace cumulative rather than independent across levels.
 haos_genesis/
 ├── __init__.py
 ├── README.md
+├── agent/
+├── api/
 ├── app.py
 ├── birth_certificate.py
 ├── boundary_microscope.py
 ├── collapse_map.py
 ├── compare_seed_families.py
+├── examples/
 ├── generator.py
 ├── paths.py
 ├── predict_collapse.py
@@ -109,10 +113,10 @@ Required packages:
 
 - `numpy`
 - `matplotlib`
+- `networkx`
 - `moviepy`
 - `streamlit`
-
-`networkx` is not required by the current extracted package.
+- `reportlab` for rebuilding the technical paper PDF
 
 ### 4.2 Running From a Parent Repo
 
@@ -123,6 +127,8 @@ python3 -m haos_genesis.predict_collapse
 python3 -m haos_genesis.boundary_microscope
 python3 -m haos_genesis.validate_mechanism
 python3 -m haos_genesis.shift_sweep
+python3 -m haos_genesis.examples.demo_real_graph
+python3 -m haos_genesis.examples.demo_network_failure
 streamlit run haos_genesis/app.py
 ```
 
@@ -135,10 +141,18 @@ python3 predict_collapse.py
 python3 boundary_microscope.py
 python3 validate_mechanism.py
 python3 shift_sweep.py
+python3 examples/demo_real_graph.py
+python3 examples/demo_network_failure.py
 streamlit run app.py
 ```
 
-### 4.4 Output Location
+### 4.4 Building the Technical Paper PDF
+
+```bash
+python3 docs/build_technical_paper_pdf.py
+```
+
+### 4.5 Output Location
 
 All analysis scripts default to:
 
@@ -322,9 +336,77 @@ Run:
 streamlit run app.py
 ```
 
-## 9. Analysis Scripts
+## 9. Practical API and Agent Layer
 
-### 9.1 Collapse Map
+### 9.1 Stability Monitor
+
+`api/stability_monitor.py` defines the shared transition primitive:
+
+`k_star = argmin delta_persistence(k -> k+1)`
+
+`StabilityMonitor.analyze_trace(trace)` returns:
+
+- `k_star`
+- `delta_persistence`
+- `min_delta`
+- `predicted_break`
+- `safety_margin`
+
+Interpretation is fixed in code:
+
+- `safety_margin > 0`
+  - stable
+- `safety_margin ~= 0`
+  - boundary
+- `safety_margin < 0`
+  - predicted collapse
+
+### 9.2 Predictor and Skill Wrapper
+
+`api/predictor.py` exposes:
+
+`predict_collapse(trace, threshold=-0.1176)`
+
+`api/skill.py` exposes:
+
+- `haos_stability_skill(payload)`
+- `analyze_many(payloads)`
+- `monitor_sequence(payloads)`
+
+The machine contract returned by `haos_stability_skill(...)` is fixed:
+
+```text
+{
+  "k_star": int,
+  "predicted_break": int,
+  "safety_margin": float,
+  "min_delta": float,
+  "confidence": float
+}
+```
+
+### 9.3 External Graph Mode and Agent Bindings
+
+The skill accepts either:
+
+- synthetic configuration input
+- external graph input with `nodes`, `edges`, and optional `positions`
+
+External graph mode:
+
+- normalizes affinity once before building the trace
+- guards against graphs with fewer than four nodes
+- rejects disconnected zero-affinity input
+- preserves deterministic behavior for a fixed seed
+
+Agent bindings currently live in:
+
+- `agent/hermes_tool.json`
+- `agent/openclaw_tool.py`
+
+## 10. Analysis Scripts
+
+### 10.1 Collapse Map
 
 Script:
 
@@ -339,9 +421,10 @@ Purpose:
 Primary outputs:
 
 - `collapse_map.csv`
+  - includes `k_star` and `min_delta_persistence`
 - `collapse_map_break_level.png`
 
-### 9.2 Seed Family Comparison
+### 10.2 Seed Family Comparison
 
 Script:
 
@@ -359,7 +442,7 @@ Primary outputs:
 - `seed_family_off_summary.csv`
 - `seed_family_off_top_features.png`
 
-### 9.3 Collapse Predictor
+### 10.3 Collapse Predictor
 
 Script:
 
@@ -378,7 +461,7 @@ Primary outputs:
 - `predictor_off_predictions.csv`
 - threshold plots
 
-### 9.4 Boundary Microscope
+### 10.4 Boundary Microscope
 
 Script:
 
@@ -396,7 +479,7 @@ Primary outputs:
 - `boundary_microscope_traces.csv`
 - `boundary_microscope_levels_1_to_3.png`
 
-### 9.5 Mechanism Validation
+### 10.5 Mechanism Validation
 
 Script:
 
@@ -413,7 +496,7 @@ Primary outputs:
 - `mechanism_validation_traces.csv`
 - `mechanism_validation.md`
 
-### 9.6 Shift Sweep
+### 10.6 Shift Sweep
 
 Script:
 
@@ -423,16 +506,20 @@ Purpose:
 
 - treat hierarchy schedule shift as a control parameter
 - record family counts, dominant break level, threshold existence, and connected-support status
+- summarize the critical transition through `k_star_mode`, `k_star_mean`, and `k_star_counts`
 
 Primary outputs:
 
 - `shift_sweep_summary.csv`
 - `shift_sweep_break_counts.csv`
+- `shift_sweep_runs.csv`
+- `shift_sweep_k_star_counts.csv`
+- `shift_sweep_k_star_distribution.png`
 - `shift_sweep_control_map.png`
 
-## 10. Validated Results
+## 11. Validated Results
 
-## 10.1 Collapse Band
+## 11.1 Collapse Band
 
 On the base sweep over seeds `20-50` and strengths `off`, `0.01`, `0.03`, `0.05`, `0.08`:
 
@@ -449,7 +536,7 @@ By strength:
 
 The boundary location remains narrow while severity degrades gradually.
 
-### 10.2 Base-Regime Predictor
+### 11.2 Base-Regime Predictor
 
 For the validated base regime:
 
@@ -467,7 +554,7 @@ Interpretation:
 - uncertainty is localized to an extremely narrow band
 - the predictor is derivative-based rather than state-based
 
-### 10.3 Family Separation
+### 11.3 Family Separation
 
 Top separating features in the base regime:
 
@@ -487,7 +574,7 @@ Interpretation:
 - break-2 seeds are already weaker before the boundary
 - the sharpest separation comes from failed consolidation during the `1->2` step
 
-### 10.4 Boundary Microscope
+### 11.4 Boundary Microscope
 
 Selected near-threshold seeds:
 
@@ -519,7 +606,7 @@ Conclusion:
 the base boundary is not driven by fragmentation.
 It is a consolidation-loss boundary inside a connected support.
 
-### 10.5 Mechanism Validation
+### 11.5 Mechanism Validation
 
 Mechanism validation summary:
 
@@ -534,7 +621,7 @@ Mechanism validation summary:
 - shifted schedules
   - do not preserve the original family split
 
-### 10.6 Shift Sweep
+### 11.6 Shift Sweep
 
 Shift sweep over `0.0 -> 1.2` in `0.1` steps:
 
@@ -550,7 +637,12 @@ This means schedule shift is a control parameter.
 It does not simply move the original threshold smoothly.
 It changes the regime itself.
 
-## 11. Validated Mechanism Claim
+Operationally, the current codebase now expresses this more directly through `k_star`.
+In the base regime the dominant critical step is the `1->2` transition. Under sufficiently
+shifted schedules the critical transition moves earlier toward `0->1`, which is why later
+shifts stop looking like a modified `2 vs 3` problem and become a different regime.
+
+## 12. Validated Mechanism Claim
 
 The current validated mechanism claim must remain narrow:
 
@@ -561,34 +653,35 @@ stronger loss of persistence, and usually a stronger recovery loss, while connec
 This is the current mechanism claim.
 It should not be generalized automatically to larger sizes, shifted schedules, or fragmenting perturbations.
 
-## 12. Limitations
+## 13. Limitations
 
 - perturbation currently mixes non-fragmenting and fragmenting effects
 - recovery is computed from operational state proxies, not a deeper dynamical field model
 - large-size regimes can compress the family split
 - shifted schedules can erase the `2 vs 3` comparison regime altogether
 - the current video is symbolic, not analytical
+- external graph mode is representation-sensitive because positions and affinity scaling can alter the observed trace
 
-## 13. Recommended Next Work
+## 14. Recommended Next Work
 
 Recommended next steps for the package:
 
-1. split perturbation into:
-   - non-fragmenting mode
-   - fragmenting mode
-2. keep base-regime claims frozen and separate from variant claims
-3. extend shift control mapping into a regime atlas across sizes
-4. avoid changing the update rule until the control landscape is fully mapped
+1. stress-test the practical skill on sparse, dense, skewed, and scale-equivalent graphs
+2. apply the system to one external use case rather than many at once
+3. keep `k_star` as the primary transition language across scripts, summaries, and examples
+4. avoid changing the update rule until pressure-testing is complete
 
-## 14. Reproducibility Checklist
+## 15. Reproducibility Checklist
 
 - deterministic seed handling is built in
 - node geometry is preserved across refinement
 - perturbation seed depends deterministically on graph seed and level
 - default outputs stay inside the package folder
 - the package runs without the original HAOS-IIP repository
+- external graph affinity normalization is deterministic
+- the technical paper PDF can be rebuilt locally from markdown
 
-## 15. Key Files
+## 16. Key Files
 
 - package overview:
   - `README.md`
@@ -598,5 +691,15 @@ Recommended next steps for the package:
   - `docs/HAOS_GENESIS_TECHNICAL_PAPER.md`
 - technical paper PDF:
   - `docs/HAOS_GENESIS_TECHNICAL_PAPER.pdf`
+- practical skill:
+  - `api/skill.py`
+- stability monitor:
+  - `api/stability_monitor.py`
+- agent bindings:
+  - `agent/hermes_tool.json`
+- examples:
+  - `examples/`
+- paper builder:
+  - `docs/build_technical_paper_pdf.py`
 - analysis outputs:
   - `output/`

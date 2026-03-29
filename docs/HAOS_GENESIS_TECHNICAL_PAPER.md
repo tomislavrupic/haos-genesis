@@ -16,7 +16,9 @@ near `-0.1176`. Boundary inspection shows the deciding event is not graph fragme
 support remains connected while break-2 seeds suffer a stronger consolidation loss than
 break-3 seeds. Variant testing shows that this mechanism should remain regime-local.
 Schedule shift acts as a control parameter that compresses and then erases the original
-`2 vs 3` split.
+`2 vs 3` split. The current implementation also exposes this boundary operationally through
+the shared primitive `k_star = argmin delta_persistence`, a deterministic stability monitor,
+and an agent-callable skill for synthetic or external graph inputs.
 
 ## 1. Introduction
 
@@ -124,6 +126,13 @@ The generator adds two trajectory metrics:
 
 These are essential. The later analysis shows that the derivative signal `delta_persistence`
 is more informative than the absolute persistence level for predicting collapse family.
+From this trajectory the system derives a shared transition primitive:
+
+`k_star = argmin delta_persistence(k -> k+1)`
+
+`k_star` identifies the step with the strongest consolidation failure. In the validated
+base regime that critical step is centered on the `1->2` transition; under sufficiently
+shifted schedules, the critical step moves earlier.
 
 ## 6. Experimental Program
 
@@ -135,6 +144,9 @@ The present package includes the full analysis workflow used to derive the curre
 4. boundary microscopy on seeds nearest the threshold
 5. mechanism validation across size, shift, and perturbation variants
 6. schedule-shift sweep as a control program
+7. deterministic example programs on external or synthetic graph scenarios
+8. a practical monitor layer exposing the same trace logic through `StabilityMonitor`,
+   `predict_collapse`, and `haos_stability_skill`
 
 All outputs are stored inside `haos_genesis/output/`.
 
@@ -167,6 +179,8 @@ does not smear outward. Perturbation changes severity more than location.
 ### 7.2 Pre-Collapse Prediction
 
 In the base regime, `delta_persistence(1->2)` is the strongest predictor of collapse family.
+Operationally, the threshold feature remains `delta_persistence(1->2)`, while `k_star`
+records where the largest drop occurs across the full trace.
 
 Threshold fit:
 
@@ -273,6 +287,12 @@ Family balance evolves as follows:
 The original `2 vs 3` split exists only for shifts `0.0-0.3`.
 After that, the comparison regime itself disappears.
 
+This control result can be stated more cleanly through `k_star`. In the base regime the
+dominant collapse-driving step is the `1->2` transition (`k_star = 1`). As shift increases,
+the strongest consolidation failure moves earlier, and by the time `break=1` becomes dominant
+the critical transition has advanced toward `0->1` (`k_star = 0`). Schedule shift therefore
+does not simply change the observed break level. It advances the critical transition index.
+
 ![Shift sweep](../output/shift_sweep_control_map.png)
 
 ## 8. Discussion
@@ -292,14 +312,38 @@ Just as importantly, the package now separates regime-local truth from broader s
 The base mechanism holds where it was validated. Outside that regime, the system reveals
 different control structure instead of being forced back into the same explanation.
 
+The current practical layer matters because it closes the loop between analysis and use.
+The same trace logic now appears in three increasingly narrow interfaces:
+
+1. `StabilityMonitor`, which analyzes an existing trace
+2. `predict_collapse(trace)`, which exposes the thresholded predictor directly
+3. `haos_stability_skill(payload)`, which accepts either a synthetic configuration or an
+   external graph and returns a fixed machine schema:
+
+```text
+{
+  "k_star": int,
+  "predicted_break": int,
+  "safety_margin": float,
+  "min_delta": float,
+  "confidence": float
+}
+```
+
+This does not make HAOS Genesis a market model, anomaly classifier, or universal network
+theory. It makes the system a deterministic stability probe whose output can be compared
+across runs and embedded inside agent workflows without changing the underlying math.
+
 ## 9. Limitations
 
-The current implementation has four important limits.
+The current implementation has five important limits.
 
 1. perturbation mixes non-fragmenting and fragmenting effects
 2. the larger-size regime is not yet mapped as carefully as the base regime
 3. schedule shift changes regime identity, so threshold comparisons do not extend automatically
 4. all metrics are operational graph observables, not deeper field variables
+5. external-graph mode is representation-sensitive, because positions and affinity scaling
+   can change the observed trajectory even for topologically similar graphs
 
 These are not defects to hide. They are boundaries of the current claim.
 
@@ -312,6 +356,7 @@ HAOS Genesis now supports a complete minimal loop:
 3. pre-collapse prediction
 4. mechanism validation
 5. control mapping
+6. a fixed practical interface for deterministic stability monitoring
 
 The validated base-regime claim is therefore:
 
@@ -330,4 +375,7 @@ python3 predict_collapse.py
 python3 boundary_microscope.py
 python3 validate_mechanism.py
 python3 shift_sweep.py --seed-start 20 --seed-stop 50
+python3 examples/demo_real_graph.py
+python3 examples/demo_network_failure.py
+python3 docs/build_technical_paper_pdf.py
 ```
