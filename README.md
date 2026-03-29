@@ -65,6 +65,7 @@ print(repair["best_intervention"])
 - `predict_collapse.py`: minimal threshold predictor for break family
 - `api/recovery.py`: bounded search for minimal stabilizing interventions
 - `examples/demo_recovery_design.py`: degraded-network recovery suggestion
+- `examples/benchmark_recovery_stress.py`: stress benchmark for sparse, dense, scaled, and embedded graphs
 - `boundary_microscope.py`: boundary inspection for connected-support behavior
 - `validate_mechanism.py`: regime-local mechanism checks across variants
 - `shift_sweep.py`: schedule-shift control mapping
