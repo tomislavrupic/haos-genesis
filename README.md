@@ -1,16 +1,10 @@
 # HAOS Genesis
 
-![Structural Collapse Early Warning System](docs/Structural%20Collapse%20Early%20Warning%20System.png)
+![Architecture of Graph Collapse Analysis](docs/Architecture%20of%20Graph%20Collapse%20Analysis.png)
 
 [Open the visual overview PDF](docs/HAOS_Genesis.pdf) · [Open the protocol PDF](docs/HAOS_Genesis_Protocol.pdf)
 
 HAOS Genesis is a minimal universe generator for studying persistence and collapse under constrained evolution. Each run creates a seeded interaction graph-world, evolves it through a frozen hierarchy, and measures persistence and recovery at each step. In the validated base regime, the system exposes a narrow pre-collapse boundary.
-
-## Visual Overview
-
-![Architecture of Graph Collapse Analysis](docs/Architecture%20of%20Graph%20Collapse%20Analysis.png)
-
-![HAOS Genesis Collapse Prediction](docs/HAOS%20Genesis%20Collapse%20Prediction.png)
 
 ## v0.1 Highlights
 
