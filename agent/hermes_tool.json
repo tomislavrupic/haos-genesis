@@ -1,0 +1,39 @@
+{
+  "name": "haos_stability",
+  "description": "Analyze structural stability and predict collapse in a graph-based system",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "seed": {
+        "type": "integer"
+      },
+      "size": {
+        "type": "integer"
+      },
+      "refinement_levels": {
+        "type": "integer"
+      },
+      "schedule_shift": {
+        "type": "number"
+      },
+      "perturbation": {
+        "type": "boolean"
+      },
+      "perturbation_strength": {
+        "type": "number"
+      },
+      "threshold": {
+        "type": "number"
+      },
+      "nodes": {
+        "type": "array"
+      },
+      "edges": {
+        "type": "array"
+      },
+      "positions": {
+        "type": "array"
+      }
+    }
+  }
+}
