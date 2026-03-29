@@ -181,7 +181,7 @@ def build_pdf(source_path: Path = SOURCE_PATH, output_path: Path = OUTPUT_PATH) 
         topMargin=48,
         bottomMargin=40,
         title="HAOS Genesis Technical Paper",
-        author="Codex",
+        author="Tomislav Rupic",
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     document.build(story, onFirstPage=_page_number, onLaterPages=_page_number)

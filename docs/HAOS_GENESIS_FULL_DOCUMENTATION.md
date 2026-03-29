@@ -1,5 +1,9 @@
 # HAOS Genesis Full Documentation
 
+Author: Tomislav Rupic
+
+Version: v0.1.0
+
 ## 1. Purpose
 
 HAOS Genesis is a self-contained subsystem for testing whether graph structure survives

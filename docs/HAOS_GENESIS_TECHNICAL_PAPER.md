@@ -1,5 +1,9 @@
 # HAOS Genesis: A Path-Dependent Persistence Probe with a Predictable Collapse Boundary
 
+Author: Tomislav Rupic
+
+Version: v0.1.0
+
 ## Abstract
 
 HAOS Genesis is a self-contained graph-based persistence engine designed to test whether
