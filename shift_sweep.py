@@ -19,6 +19,7 @@ import numpy as np
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from haos_genesis.api import compute_k_star
 from haos_genesis.generator import generate_universe
 from haos_genesis.internal.metrics import connected_components
 from haos_genesis.paths import OUTPUT_DIR
@@ -70,8 +71,8 @@ def _run_seed_case(seed: int, size: int, refinement_levels: int, schedule_shift:
         schedule_shift=schedule_shift,
     )
     metrics = [dict(entry["metrics"]) for entry in trace]
-    delta_values = [float(item["delta_persistence"]) for item in metrics[1:]]
-    break_index = int(np.argmin(delta_values) + 1) if delta_values else 0
+    k_data = compute_k_star(trace)
+    break_index = min(int(k_data["k_star"]) + 1, len(trace) - 1)
     return {
         "seed": int(seed),
         "break_level": int(trace[break_index]["level"]),
