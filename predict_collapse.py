@@ -205,16 +205,19 @@ def main() -> None:
     parser.add_argument("--split-seed", type=int, default=17)
     parser.add_argument("--test-fraction", type=float, default=0.25)
     args = parser.parse_args()
-    summary_rows, _ = build_predictor_report(
-        collapse_map=str(args.collapse_map),
-        features_csv=args.features_csv,
-        strength_label=str(args.strength_label),
-        size=int(args.size),
-        refinement_levels=int(args.refinement_levels),
-        output_dir=str(args.output_dir),
-        split_seed=int(args.split_seed),
-        test_fraction=float(args.test_fraction),
-    )
+    try:
+        summary_rows, _ = build_predictor_report(
+            collapse_map=str(args.collapse_map),
+            features_csv=args.features_csv,
+            strength_label=str(args.strength_label),
+            size=int(args.size),
+            refinement_levels=int(args.refinement_levels),
+            output_dir=str(args.output_dir),
+            split_seed=int(args.split_seed),
+            test_fraction=float(args.test_fraction),
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
     for row in summary_rows:
         print(
             f"{row['feature']}: threshold={row['direction']} {row['threshold']:.6f} "

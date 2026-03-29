@@ -163,7 +163,13 @@ def build_seed_family_comparison(
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     families = _select_seed_families(_read_rows(Path(collapse_map_path)), strength_label)
     if not families[2] or not families[3]:
-        raise ValueError(f"Need both break-2 and break-3 seed families for strength_label={strength_label}.")
+        raise ValueError(
+            "Need both break-2 and break-3 seed families for "
+            f"strength_label={strength_label} "
+            f"(found break_2={len(families[2])}, break_3={len(families[3])}). "
+            "Run collapse_map.py over a wider sweep or choose a strength_label "
+            "with both families."
+        )
     records = [_extract_seed_record(seed, 2, size, refinement_levels, strength_label) for seed in families[2]]
     records.extend(_extract_seed_record(seed, 3, size, refinement_levels, strength_label) for seed in families[3])
     summary = _summarize(records)
@@ -183,13 +189,16 @@ def main() -> None:
     parser.add_argument("--refinement-levels", type=int, default=5)
     parser.add_argument("--output-dir", default=str(OUTPUT_DIR))
     args = parser.parse_args()
-    records, summary = build_seed_family_comparison(
-        collapse_map_path=str(args.collapse_map),
-        strength_label=str(args.strength_label),
-        size=int(args.size),
-        refinement_levels=int(args.refinement_levels),
-        output_dir=str(args.output_dir),
-    )
+    try:
+        records, summary = build_seed_family_comparison(
+            collapse_map_path=str(args.collapse_map),
+            strength_label=str(args.strength_label),
+            size=int(args.size),
+            refinement_levels=int(args.refinement_levels),
+            output_dir=str(args.output_dir),
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
     early = sum(1 for record in records if record["family"] == "break_2")
     late = sum(1 for record in records if record["family"] == "break_3")
     print(f"break_2={early} break_3={late} strength_label={args.strength_label}")
