@@ -21,6 +21,7 @@ def compute_k_star(trace: list[TraceEntry]) -> dict[str, int | float | list[floa
 
     persistence = [float(entry["metrics"]["persistence_score"]) for entry in trace]
     delta = [float(persistence[index + 1] - persistence[index]) for index in range(len(persistence) - 1)]
+    assert len(delta) == len(trace) - 1
     k_star = int(min(range(len(delta)), key=lambda index: delta[index]))
     min_delta = float(delta[k_star])
     return {
@@ -44,6 +45,7 @@ class StabilityMonitor:
         if len(delta) > 1:
             d12 = float(delta[1])
             predicted_break = 2 if d12 <= self.threshold else 3
+            # safety_margin > 0 -> stable, ~=0 -> boundary, < 0 -> predicted collapse
             safety_margin = float(self.threshold - d12)
 
         return {

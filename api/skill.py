@@ -21,7 +21,8 @@ def _normalize_positions(positions: np.ndarray) -> np.ndarray:
 
 def _normalize_affinity(affinity: np.ndarray) -> np.ndarray:
     array = np.asarray(affinity, dtype=float)
-    array = array / max(float(array.max()), 1.0e-12)
+    if float(array.max()) > 1.0 + 1.0e-9:
+        array = array / max(float(array.max()), 1.0e-12)
     row_sum = array.sum(axis=1, keepdims=True)
     return array / (row_sum + 1.0e-12)
 
@@ -124,7 +125,7 @@ def haos_stability_skill(input_payload: dict[str, Any]):
 
 
 def analyze_many(payloads: list[dict[str, Any]]):
-    return [haos_stability_skill(payload) for payload in payloads]
+    return [{"index": index, "result": haos_stability_skill(payload)} for index, payload in enumerate(payloads)]
 
 
 def monitor_sequence(payloads: list[dict[str, Any]]):
