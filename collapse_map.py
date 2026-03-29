@@ -39,6 +39,8 @@ def _run_case(seed: int, size: int, refinement_levels: int, perturbation: bool, 
         "mode": "off" if not perturbation else "on",
         "strength": float(strength),
         "strength_label": "off" if not perturbation else f"{strength:.2f}",
+        "k_star": int(k_data["k_star"]),
+        "min_delta_persistence": float(k_data["min_delta"]),
         "break_level": int(trace[break_index]["level"]),
         "final_global_overlap": float(metrics[-1]["overlap"]),
         "failure_events": int(sum(1 for item in metrics if str(item["label"]) == "unstable")),
@@ -48,7 +50,18 @@ def _run_case(seed: int, size: int, refinement_levels: int, perturbation: bool, 
 
 def _write_csv(path: Path, rows: list[dict[str, float | int | str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = ["seed", "mode", "strength", "strength_label", "break_level", "final_global_overlap", "failure_events", "mean_recovery_score"]
+    fieldnames = [
+        "seed",
+        "mode",
+        "strength",
+        "strength_label",
+        "k_star",
+        "min_delta_persistence",
+        "break_level",
+        "final_global_overlap",
+        "failure_events",
+        "mean_recovery_score",
+    ]
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
@@ -109,7 +122,8 @@ def main() -> None:
     rows = build_collapse_map(seeds, [float(value) for value in args.strengths], int(args.size), int(args.refinement_levels), str(args.output_dir))
     for row in rows:
         print(
-            f"seed={row['seed']} strength={row['strength_label']} break={row['break_level']} "
+            f"seed={row['seed']} strength={row['strength_label']} k_star={row['k_star']} break={row['break_level']} "
+            f"min_delta={row['min_delta_persistence']:.6f} "
             f"final_overlap={row['final_global_overlap']:.6f} failures={row['failure_events']} "
             f"mean_recovery={row['mean_recovery_score']:.6f}"
         )
