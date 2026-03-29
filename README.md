@@ -37,7 +37,7 @@ streamlit run app.py
 ## API Example
 
 ```python
-from haos_genesis.api import haos_stability_skill
+from haos_genesis.api import haos_stability_skill, suggest_recovery
 
 result = haos_stability_skill({
     "seed": 42,
@@ -49,11 +49,22 @@ result = haos_stability_skill({
 print(result)
 ```
 
+```python
+repair = suggest_recovery({
+    "nodes": [0, 1, 2, 3],
+    "edges": [(0, 1, 0.8), (1, 2, 0.6), (2, 3, 0.7)],
+})
+
+print(repair["best_intervention"])
+```
+
 ## Repository Contents
 
 - `generator.py`: path-dependent graph evolution engine
 - `collapse_map.py`: collapse-band sweep across seeds and perturbation strengths
 - `predict_collapse.py`: minimal threshold predictor for break family
+- `api/recovery.py`: bounded search for minimal stabilizing interventions
+- `examples/demo_recovery_design.py`: degraded-network recovery suggestion
 - `boundary_microscope.py`: boundary inspection for connected-support behavior
 - `validate_mechanism.py`: regime-local mechanism checks across variants
 - `shift_sweep.py`: schedule-shift control mapping

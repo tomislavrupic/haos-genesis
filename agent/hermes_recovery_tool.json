@@ -1,0 +1,46 @@
+{
+  "name": "haos_recovery",
+  "description": "Suggest a minimal stabilizing intervention for a graph-based system",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "nodes": {
+        "type": "array"
+      },
+      "edges": {
+        "type": "array"
+      },
+      "positions": {
+        "type": "array"
+      },
+      "seed": {
+        "type": "integer"
+      },
+      "refinement_levels": {
+        "type": "integer"
+      },
+      "schedule_shift": {
+        "type": "number"
+      },
+      "threshold": {
+        "type": "number"
+      },
+      "reinforce_scale": {
+        "type": "number"
+      },
+      "add_scale": {
+        "type": "number"
+      },
+      "max_existing_candidates": {
+        "type": "integer"
+      },
+      "max_missing_candidates": {
+        "type": "integer"
+      }
+    },
+    "required": [
+      "nodes",
+      "edges"
+    ]
+  }
+}
