@@ -64,6 +64,9 @@ print(repair["best_intervention"])
 - `collapse_map.py`: collapse-band sweep across seeds and perturbation strengths
 - `predict_collapse.py`: minimal threshold predictor for break family
 - `api/recovery.py`: bounded search for minimal stabilizing interventions
+- `api/sensor.py`: continuous stability monitoring layer over rolling external graphs
+- `adapters/trading_stream.py`: deterministic market-stream adapter into HAOS sensor signals
+- `examples/validate_trading_adapter.py`: regime-separation validator for trend, range, and shock
 - `examples/demo_recovery_design.py`: degraded-network recovery suggestion
 - `examples/benchmark_recovery_stress.py`: stress benchmark for sparse, dense, scaled, and embedded graphs
 - `boundary_microscope.py`: boundary inspection for connected-support behavior
@@ -77,6 +80,8 @@ print(repair["best_intervention"])
 - [Full documentation](docs/HAOS_GENESIS_FULL_DOCUMENTATION.md)
 - [Recovery paper](docs/HAOS_GENESIS_RECOVERY_PAPER.md)
 - [Recovery paper PDF](docs/HAOS_GENESIS_RECOVERY_PAPER.pdf)
+- [Sensor and trading adapter paper](docs/HAOS_GENESIS_SENSOR_TRADING_PAPER.md)
+- [Sensor and trading adapter paper PDF](docs/HAOS_GENESIS_SENSOR_TRADING_PAPER.pdf)
 - [Technical paper](docs/HAOS_GENESIS_TECHNICAL_PAPER.md)
 - [Technical paper PDF](docs/HAOS_GENESIS_TECHNICAL_PAPER.pdf)
 - [Structural collapse overview graphic](docs/Predicting%20Structural%20System%20Collapse%20Overview.png)
