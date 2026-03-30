@@ -7,6 +7,7 @@ Implements constrained evolution and measurable survival
 from .birth_certificate import BirthCertificate
 from .generator import generate_universe
 from .api import (
+    HAOSSensor,
     StabilityMonitor,
     apply_intervention,
     analyze_many,
@@ -19,6 +20,7 @@ from .api import (
 
 __all__ = [
     "BirthCertificate",
+    "HAOSSensor",
     "StabilityMonitor",
     "apply_intervention",
     "analyze_many",
