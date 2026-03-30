@@ -76,13 +76,16 @@ print(repair["best_intervention"])
 ## Interpretation Protocol
 
 Use [Market signal interpretation protocol v0.1](docs/MARKET_SIGNAL_INTERPRETATION_PROTOCOL_V0_1.md)
-to read `safety_margin`, `k_star`, and `confidence` consistently across market segments.
+and its [PDF version](docs/MARKET_SIGNAL_INTERPRETATION_PROTOCOL_V0_1.pdf) to read
+`safety_margin`, `k_star`, and `confidence` consistently across market segments.
 
 ## Docs
 
 - [Visual overview PDF](docs/HAOS_Genesis.pdf)
 - [Protocol PDF](docs/HAOS_Genesis_Protocol.pdf)
 - [Full documentation](docs/HAOS_GENESIS_FULL_DOCUMENTATION.md)
+- [Market signal interpretation protocol](docs/MARKET_SIGNAL_INTERPRETATION_PROTOCOL_V0_1.md)
+- [Market signal interpretation protocol PDF](docs/MARKET_SIGNAL_INTERPRETATION_PROTOCOL_V0_1.pdf)
 - [Recovery paper](docs/HAOS_GENESIS_RECOVERY_PAPER.md)
 - [Recovery paper PDF](docs/HAOS_GENESIS_RECOVERY_PAPER.pdf)
 - [Sensor and trading adapter paper](docs/HAOS_GENESIS_SENSOR_TRADING_PAPER.md)
