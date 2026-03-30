@@ -73,6 +73,11 @@ print(repair["best_intervention"])
 - `validate_mechanism.py`: regime-local mechanism checks across variants
 - `shift_sweep.py`: schedule-shift control mapping
 
+## Interpretation Protocol
+
+Use [Market signal interpretation protocol v0.1](docs/MARKET_SIGNAL_INTERPRETATION_PROTOCOL_V0_1.md)
+to read `safety_margin`, `k_star`, and `confidence` consistently across market segments.
+
 ## Docs
 
 - [Visual overview PDF](docs/HAOS_Genesis.pdf)
