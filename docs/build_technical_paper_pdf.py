@@ -42,7 +42,12 @@ def _scaled_image(path: Path, max_width: float) -> Image:
     return image
 
 
-def build_pdf(source_path: Path = SOURCE_PATH, output_path: Path = OUTPUT_PATH) -> Path:
+def build_pdf(
+    source_path: Path = SOURCE_PATH,
+    output_path: Path = OUTPUT_PATH,
+    title: str = "HAOS Genesis Technical Paper",
+    author: str = "Tomislav Rupic",
+) -> Path:
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
         "TitlePaper",
@@ -180,8 +185,8 @@ def build_pdf(source_path: Path = SOURCE_PATH, output_path: Path = OUTPUT_PATH) 
         rightMargin=50,
         topMargin=48,
         bottomMargin=40,
-        title="HAOS Genesis Technical Paper",
-        author="Tomislav Rupic",
+        title=title,
+        author=author,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     document.build(story, onFirstPage=_page_number, onLaterPages=_page_number)
